@@ -1,0 +1,6 @@
+pinout
+gray ground
+white 5v
+black data
+48 pixels
+D18 pin
