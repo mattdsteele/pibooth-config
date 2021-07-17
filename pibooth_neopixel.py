@@ -43,6 +43,17 @@ def thread_cycle(pixels):
     print("Stopping")
     app.pixels.fill((0,0,0))
 
+def countdown(time_seconds, pixels):
+    raw_time_between_pixels = time_seconds / num_pixels
+    time_between_pixels = raw_time_between_pixels * 0.9
+
+    pixels.fill((0, 255, 0))
+    pixels.show()
+    for i in range(0, num_pixels):
+        pixels[num_pixels - i - 1] = (0, 0, 0)
+        pixels.show()
+        time.sleep(time_between_pixels)
+
 def rainbow_cycle(wait, pixels):
     LOGGER.info("running rainbow cycle")
     for j in range(255):
@@ -66,13 +77,12 @@ def state_wait_enter(app):
     LOGGER.info("Starting proc")
     proc = threading.Thread(target=thread_cycle, args=[app.pixels])
     proc.daemon = True
+    # proc.do_run = True
     proc.start()
     app.neopixels_proc = proc;
-    # rainbow_cycle(0.001, app.pixels)
 
 def state_wait_do(app):
     LOGGER.info("wait do")
-    # rainbow_cycle(0.001, app.pixels)
 
 @pibooth.hookimpl
 def state_wait_exit(app):
@@ -87,12 +97,18 @@ def state_choose_enter(app):
 
 @pibooth.hookimpl
 def state_preview_enter(app):
-    app.pixels.fill((0,255,0))
+    app.pixels.fill((0,0,0))
     app.pixels.show()
+
+    proc = threading.Thread(target=countdown, args=[3, app.pixels])
+    proc.daemon = True
+    proc.start()
+    app.neopixels_proc = proc;
     LOGGER.info("In preview enter")
 
 @pibooth.hookimpl
 def state_preview_exit(app):
+    app.neopixels_proc.do_run = False
     app.pixels.fill((255,255,0))
     app.pixels.show()
     LOGGER.info("In preview exit")
