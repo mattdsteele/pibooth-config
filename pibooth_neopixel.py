@@ -4,7 +4,6 @@ import pibooth
 import board
 import neopixel
 import time
-import multiprocessing
 import threading
 from pibooth.utils import LOGGER
 
@@ -36,10 +35,13 @@ def wheel(pos):
 
 
 def thread_cycle(pixels):
+    t = threading.currentThread()
     LOGGER.info("Got to thread cycle")
     LOGGER.info(pixels)
-    while True:
+    while getattr(t, "do_run", True):
         rainbow_cycle(0.001, pixels)
+    print("Stopping")
+    app.pixels.fill((0,0,0))
 
 def rainbow_cycle(wait, pixels):
     LOGGER.info("running rainbow cycle")
@@ -75,6 +77,7 @@ def state_wait_do(app):
 @pibooth.hookimpl
 def state_wait_exit(app):
     LOGGER.info("Stopping rainbow process")
+    app.neopixels_proc.do_run = False
     # app.neopixels_proc.terminate();
 
 @pibooth.hookimpl
