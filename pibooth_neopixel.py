@@ -39,13 +39,14 @@ def thread_cycle(pixels):
     LOGGER.info("Got to thread cycle")
     LOGGER.info(pixels)
     while getattr(t, "do_run", True):
-        rainbow_cycle(0.001, pixels)
+        rainbow_cycle(0.001, pixels, t)
     print("Stopping")
-    app.pixels.fill((0,0,0))
+    pixels.fill((0,0,0))
+    pixels.show()
 
 def countdown(time_seconds, pixels):
     raw_time_between_pixels = time_seconds / num_pixels
-    time_between_pixels = raw_time_between_pixels * 0.9
+    time_between_pixels = raw_time_between_pixels * 0.95
 
     pixels.fill((0, 255, 0))
     pixels.show()
@@ -54,14 +55,18 @@ def countdown(time_seconds, pixels):
         pixels.show()
         time.sleep(time_between_pixels)
 
-def rainbow_cycle(wait, pixels):
+def rainbow_cycle(wait, pixels, t):
     LOGGER.info("running rainbow cycle")
     for j in range(255):
         for i in range(num_pixels):
             pixel_index = (i * 256 // num_pixels) + j
             pixels[i] = wheel(pixel_index & 255)
-        pixels.show()
-        time.sleep(wait)
+        if getattr(t, "do_run", False):
+            LOGGER.info("stopping rainbow cycle")
+            return
+        else:
+            pixels.show()
+            time.sleep(wait)
 
 
 @pibooth.hookimpl
@@ -77,7 +82,6 @@ def state_wait_enter(app):
     LOGGER.info("Starting proc")
     proc = threading.Thread(target=thread_cycle, args=[app.pixels])
     proc.daemon = True
-    # proc.do_run = True
     proc.start()
     app.neopixels_proc = proc;
 
@@ -88,10 +92,11 @@ def state_wait_do(app):
 def state_wait_exit(app):
     LOGGER.info("Stopping rainbow process")
     app.neopixels_proc.do_run = False
-    # app.neopixels_proc.terminate();
+    LOGGER.info("Stopped rainbow process")
 
 @pibooth.hookimpl
 def state_choose_enter(app):
+    LOGGER.info("choosing enter")
     app.pixels.fill((0,0,0))
     app.pixels.show()
 
@@ -109,7 +114,7 @@ def state_preview_enter(app):
 @pibooth.hookimpl
 def state_preview_exit(app):
     app.neopixels_proc.do_run = False
-    app.pixels.fill((255,255,0))
+    app.pixels.fill((255,255,255))
     app.pixels.show()
     LOGGER.info("In preview exit")
 
