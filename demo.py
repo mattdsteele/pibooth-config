@@ -53,8 +53,19 @@ def rainbow_cycle(wait):
         pixels.show()
         time.sleep(wait)
 
+def countdown(time_seconds):
+    time_between_pixels = time_seconds / num_pixels
+    pixels.fill((0, 255, 0))
+    pixels.show()
+    for i in range(0, num_pixels):
+        pixels[num_pixels - i - 1] = (0, 0, 0)
+        pixels.show()
+        time.sleep(time_between_pixels)
+
 
 while True:
+    countdown(3)
+
     # Comment this line out if you have RGBW/GRBW NeoPixels
     pixels.fill((255, 0, 0))
     # Uncomment this line if you have RGBW/GRBW NeoPixels
